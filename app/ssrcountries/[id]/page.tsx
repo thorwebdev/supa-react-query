@@ -1,25 +1,28 @@
 // `app` directory
+import useCountryQuery from "@/hooks/use-country-query";
 import useSupabaseServer from "@/utils/server-supabase";
+import {
+  HydrationBoundary,
+  QueryClient,
+  dehydrate,
+} from "@tanstack/react-query";
 import { cookies } from "next/headers";
-
-async function getData({
-  id,
-  cookieStore,
-}: {
-  id: number;
-  cookieStore: ReturnType<typeof cookies>;
-}) {
-  const supabase = useSupabaseServer(cookieStore);
-  const { data } = await supabase
-    .from("countries")
-    .select()
-    .eq("id", id)
-    .throwOnError();
-  return data;
-}
+import Country from "../country";
 
 export default async function Page({ params }: { params: { id: number } }) {
   const cookieStore = cookies();
-  const data = await getData({ id: params.id, cookieStore });
-  return <pre>{JSON.stringify({ data }, null, 2)}</pre>;
+  const supabase = useSupabaseServer(cookieStore);
+  const queryClient = new QueryClient();
+
+  await queryClient.prefetchQuery(
+    useCountryQuery({ countryId: params.id, client: supabase })
+  );
+
+  return (
+    // Neat! Serialization is now as easy as passing props.
+    // HydrationBoundary is a Client Component, so hydration will happen there.
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <Country id={params.id} />
+    </HydrationBoundary>
+  );
 }
