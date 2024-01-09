@@ -1,6 +1,6 @@
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
-import { Database } from "./database.types";
+import { createServerClient } from '@supabase/ssr'
+import { cookies } from 'next/headers'
+import { Database } from './database.types'
 
 export default function useSupabaseServer(
   cookieStore: ReturnType<typeof cookies>
@@ -11,9 +11,9 @@ export default function useSupabaseServer(
     {
       cookies: {
         get(name: string) {
-          return cookieStore.get(name)?.value;
+          return cookieStore.get(name)?.value
         },
       },
     }
-  );
+  )
 }
